@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	DIFFCHECKERURL        = "https://diffchecker-api-production.herokuapp.com"
-	DIFFCHECKERSESSIONS   = DIFFCHECKERURL + "/sessions"
-	DIFFCHECKERDIFFS      = DIFFCHECKERURL + "/diffs"
-	DIFFCHECKERSUCCESSURL = "https://www.diffchecker.com/"
-	AUTHTOKENKEY          = "authToken"
+	diffcheckerurl        = "https://diffchecker-api-production.herokuapp.com"
+	diffcheckersessions   = diffcheckerurl + "/sessions"
+	diffcheckerdiffs      = diffcheckerurl + "/diffs"
+	diffcheckersuccessurl = "https://www.diffchecker.com/"
+	authtokenkey          = "authToken"
 )
 
 type DiffChecker struct {
@@ -23,19 +23,19 @@ type DiffChecker struct {
 	password string
 }
 
-func (checker DiffChecker) Upload(left string, right string, title string) (slug string, err error) {
+func (checker DiffChecker) Upload(left string, right string, title string) (diffcheckerurl string, err error) {
 	return checker.UploadWithDuration(left, right, title, FOREVER)
 }
 
-func (checker DiffChecker) UploadBytes(left []byte, right []byte, title string) (slug string, err error) {
+func (checker DiffChecker) UploadBytes(left []byte, right []byte, title string) (diffcheckerurl string, err error) {
 	return checker.UploadBytesWithDuration(left, right, title, FOREVER)
 }
 
-func (checker DiffChecker) UploadBytesWithDuration(left []byte, right []byte, title string, expiry DiffCheckerExpiry) (slug string, err error) {
+func (checker DiffChecker) UploadBytesWithDuration(left []byte, right []byte, title string, expiry DiffCheckerExpiry) (diffcheckerurl string, err error) {
 	return checker.UploadWithDuration(string(left), string(right), title, expiry)
 }
 
-func (checker DiffChecker) UploadWithDuration(left string, right string, title string, expiry DiffCheckerExpiry) (slug string, err error) {
+func (checker DiffChecker) UploadWithDuration(left string, right string, title string, expiry DiffCheckerExpiry) (diffcheckerurl string, err error) {
 	token, err := checker.auth()
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (checker DiffChecker) UploadWithDuration(left string, right string, title s
 		urlValues.Add("title", title)
 	}
 
-	request, _ := http.NewRequest("POST", DIFFCHECKERDIFFS, strings.NewReader(urlValues.Encode()))
+	request, _ := http.NewRequest("POST", diffcheckerdiffs, strings.NewReader(urlValues.Encode()))
 	request.Header.Set("Authorization", "Bearer "+token)
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -70,11 +70,11 @@ func (checker DiffChecker) UploadWithDuration(left string, right string, title s
 		return "", err
 	}
 
-	return DIFFCHECKERSUCCESSURL + jsonBody["slug"].(string), nil
+	return diffcheckersuccessurl + jsonBody["slug"].(string), nil
 }
 
 func (checker DiffChecker) auth() (token string, err error) {
-	response, err := http.PostForm(DIFFCHECKERSESSIONS, url.Values{"email": {checker.email}, "password": {checker.password}})
+	response, err := http.PostForm(diffcheckersessions, url.Values{"email": {checker.email}, "password": {checker.password}})
 
 	if err != nil {
 		return "", err
@@ -92,11 +92,11 @@ func (checker DiffChecker) auth() (token string, err error) {
 		return "", err
 	}
 
-	if jsonBody[AUTHTOKENKEY] == nil {
-		return "", fmt.Errorf("response did not contain %s", AUTHTOKENKEY)
+	if jsonBody[authtokenkey] == nil {
+		return "", fmt.Errorf("response did not contain %s", authtokenkey)
 	}
 
-	return jsonBody[AUTHTOKENKEY].(string), nil
+	return jsonBody[authtokenkey].(string), nil
 }
 
 func parseJson(body io.ReadCloser) (jsonBody map[string]interface{}, err error) {
