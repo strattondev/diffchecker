@@ -19,8 +19,8 @@ const (
 )
 
 type DiffChecker struct {
-	email    string
-	password string
+	Email    string
+	Password string
 }
 
 func (checker DiffChecker) Upload(left string, right string, title string) (diffcheckerurl string, err error) {
@@ -74,7 +74,7 @@ func (checker DiffChecker) UploadWithDuration(left string, right string, title s
 }
 
 func (checker DiffChecker) auth() (token string, err error) {
-	response, err := http.PostForm(diffcheckersessions, url.Values{"email": {checker.email}, "password": {checker.password}})
+	response, err := http.PostForm(diffcheckersessions, url.Values{"email": {checker.Email}, "password": {checker.Password}})
 
 	if err != nil {
 		return "", err
